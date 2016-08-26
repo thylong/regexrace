@@ -1,0 +1,3 @@
+ENV: "dev"
+ROLE: "regex-race"
+MONGO_URI: "mongodb://mongo/regexrace"
