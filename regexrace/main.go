@@ -19,6 +19,7 @@ func main() {
 	config.LoadConfig()
 
 	// Ensure DB connectivity and content.
+	time.Sleep(5 * time.Second)
 	session, err := mgo.Dial(viper.GetString("MONGO_URI"))
 	if err != nil {
 		panic(err)
@@ -42,5 +43,6 @@ func main() {
 	// Register Handlers.
 	http.Handle("/status", c.ThenFunc(http.HandlerFunc(handlers.StatusHandler)))
 	http.Handle("/answer", c.ThenFunc(http.HandlerFunc(handlers.AnswerHandler)))
+	http.Handle("/home", c.ThenFunc(http.HandlerFunc(handlers.HomeHandler)))
 	http.ListenAndServe(":8080", nil)
 }

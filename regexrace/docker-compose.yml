@@ -1,7 +1,7 @@
 version: '2'
 services:
     mongo:
-        image: mongo:3.2
+        image: mongo:3.0.10
     regexrace:
         build: .
         ports:
