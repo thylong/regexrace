@@ -4,13 +4,12 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"time"
 
 	"context"
 
 	"github.com/spf13/viper"
 
-	"gopkg.in/mgo.v2"
+	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -73,15 +72,10 @@ func EnsureData(session *mgo.Session) {
 }
 
 // OpenMongoDB takes a mongo_uri argument and returns a mgosession or panics.
-// TODO: As soon as a lazy mode is realeased on mgo, implement it.
+// See : http://stackoverflow.com/questions/26574594/best-practice-to-maintain-a-mgo-session
 func OpenMongoDB(mongoURI string) *mgo.Session {
-	session, err := mgo.Dial(viper.GetString("MONGO_URI"))
-	if err != nil {
-		panic(err)
-	}
-	session.SetSafe(&mgo.Safe{})
-	session.SetSyncTimeout(3 * time.Second)
-	session.SetSocketTimeout(3 * time.Second)
+	session := viper.Get("MONGO_SESSION").(*mgo.Session).Copy()
+	defer session.Close()
 
 	return session
 }

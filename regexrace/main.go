@@ -18,8 +18,7 @@ import (
 func main() {
 	config.LoadConfig()
 
-	// Ensure DB connectivity and content.
-	time.Sleep(5 * time.Second)
+	// Create and store a Mongo session for every requests.
 	session, err := mgo.Dial(viper.GetString("MONGO_URI"))
 	if err != nil {
 		panic(err)
@@ -27,11 +26,13 @@ func main() {
 	session.SetSafe(&mgo.Safe{})
 	session.SetSyncTimeout(3 * time.Second)
 	session.SetSocketTimeout(3 * time.Second)
+	viper.Set("MONGO_SESSION", session)
 
+	// Ensure data looks like expected.
 	models.PrepareDB(session)
 	models.EnsureData(session)
-	session.Close()
 
+	// Middlewares triggered for every requests.
 	c := alice.New(
 		middlewares.LoggingHandler,
 		middlewares.TimeoutHandler,
