@@ -17,6 +17,6 @@
     {
         "qid": 3,
         "sentence": "Some pilots get picked and become television programs. Some don't, become nothing. She starred in one of the ones that became nothing.",
-        "match_positions": [[45, 54], [74, 82], [126, 134]]
+        "match_positions": [[44, 54], [73, 82], [125, 134]]
     }
 ]

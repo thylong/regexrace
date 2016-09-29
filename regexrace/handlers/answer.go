@@ -12,6 +12,7 @@ import (
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/thylong/regexrace/models"
 )
 
@@ -47,7 +48,7 @@ func AnswerHandler(w http.ResponseWriter, r *http.Request) {
 	responseData := make(map[string]interface{})
 	if isAnswerRegexMatchQuestion(answer, originalQuestion) {
 		responseData["status"] = "success"
-		responseData["new_question"] = getNewQuestion(answer, questionsCol)
+		responseData["new_question"] = getNewJSONQuestion(answer, questionsCol)
 	} else {
 		responseData["status"] = "fail"
 	}
@@ -68,6 +69,8 @@ func extractAnswerFromRequest(r *http.Request) Answer {
 	if len(content) == 0 {
 		panic(ErrJSONPayloadEmpty)
 	}
+	test := string(content)
+	fmt.Println(test)
 	err = json.Unmarshal(content, &answer)
 	if err != nil {
 		panic(ErrJSONPayloadInvalidFormat)
@@ -75,30 +78,44 @@ func extractAnswerFromRequest(r *http.Request) Answer {
 	return answer
 }
 
-// getNewQuestion returns a new question from the database.
-func getNewQuestion(answer Answer, questionsCol *mgo.Collection) map[string]interface{} {
-	var newQuestion map[string]interface{}
+// getNewQuestion returns a new question with formatted HTML Sentence from the database.
+func getNewQuestion(answer Answer, questionsCol *mgo.Collection) models.Question {
+	var newQuestion models.Question
 
 	err := questionsCol.Find(
 		bson.M{"qid": answer.QID + 1},
 	).Select(bson.M{"sentence": 1, "qid": 1, "match_positions": 1, "_id": 0}).One(&newQuestion)
 	if err != nil {
-		return nil
+		panic(err)
 	}
+	newQuestion.Sentence = models.FormatHTMLSentence(newQuestion.Sentence, newQuestion.MatchPositions)
 	return newQuestion
+}
+
+// getNewJSONQuestion returns a new JSON question with formatted HTML Sentence from the database.
+func getNewJSONQuestion(answer Answer, questionsCol *mgo.Collection) map[string]interface{} {
+	newQuestion := getNewQuestion(answer, questionsCol)
+
+	JSONQuestion := make(map[string]interface{})
+	JSONQuestion["qid"] = newQuestion.QID
+	JSONQuestion["sentence"] = newQuestion.Sentence
+	JSONQuestion["match_positions"] = newQuestion.MatchPositions
+
+	return JSONQuestion
 }
 
 // isAnswerRegexMatchQuestion returns true if the regex is a right answer else returns false.
 func isAnswerRegexMatchQuestion(answer Answer, originalQuestion models.Question) bool {
 	var re, err = regexp.Compile(answer.Regex)
 	if err != nil {
+		log.Warn(err.Error())
 		return false
 	}
 	var matchPositions interface{}
-	if answer.Modifier == "g" {
-		matchPositions = re.FindAllStringSubmatchIndex(originalQuestion.Sentence, 100)
+	if answer.Modifier == "g" || answer.Modifier == "" {
+		matchPositions = re.FindAllStringIndex(originalQuestion.Sentence, -1)
 	} else {
-		matchPositions = [][]int{re.FindStringSubmatchIndex(originalQuestion.Sentence)}
+		matchPositions = [][]int{re.FindStringIndex(originalQuestion.Sentence)}
 	}
 
 	fmt.Println(matchPositions)

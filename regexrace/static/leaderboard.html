@@ -36,32 +36,32 @@
                             <h3 class="masthead-brand">RegexRace</h3>
                             <nav>
                                 <ul class="nav masthead-nav">
-                                    <li class="active"><a href="home">Home</a></li>
-                                    <li><a href="leaderboard">Leaderboard</a></li>
+                                    <li><a href="home">Home</a></li>
+                                    <li class="active"><a href="leaderboard">Leaderboard</a></li>
                                 </ul>
                             </nav>
                         </div>
                     </div>
                     <div class="inner cover">
-                        <h1 class="cover-heading">Use a regex to match the highlights.</h1>
-                        <p class="lead" id="sentence">{{.Sentence}}</p>
-                        <p class="lead">
-                            <form class="" id="{{.QID}}" action="answer" method="post">
-                                <div class="col-xs-8">
-                                    <input type="text" class="form-control" name="regex" value="" placeholder="Write regex.">
-                                </div>
-                                <div class="col-xs-4">
-                                    <input type="text" class="form-control" name="modifier" value="" placeholder="Write modifier. Default : g">
-                                </div>
-                            </form>
-                        </p>
-                        <div class="col-md-6">
-                            <h2>Score : <span id="score">0</span></h2>
-                        </div>
-                        <div class="col-md-6 retry-timer">
-                            <button id="retry" type="button" class="btn btn-primary" style="display: none; margin-top: 20px;">Retry</button>
-                            <h2 id="timer-container">Timer : <span id="timer" data-duration="{{.TimerDuration}}">01:00</span></h2>
-                        </div>
+                        <h1 class="cover-heading">Top 10 scores of all-time :</h1>
+                        <table class="table table-condensed">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Name</th>
+                                    <th>Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{range $index, $score := .}}
+                                <tr>
+                                    <td>{{$index}}</td>
+                                    <td>{{$score.Username}}</td>
+                                    <td>{{$score.BestScore}}</td>
+                                </tr>
+                                {{end}}
+                            </tbody>
+                        </table>
                     </div>
 
                     <div class="mastfoot">
@@ -75,6 +75,5 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
         <!-- Latest compiled and minified JavaScript -->
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-        <script src="/static/regex.js"></script>
     </body>
 </html>

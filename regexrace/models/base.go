@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -23,40 +24,72 @@ var ErrNotFound = mgo.ErrNotFound
 
 // PrepareDB ensure presence of persistent and immutable data in the DB.
 func PrepareDB(session *mgo.Session) {
-	index := mgo.Index{
-		Key:        []string{"qid", "sentence", "match_positions"},
-		Unique:     true,
-		DropDups:   true,
-		Background: false,
+	indexes := []mgo.Index{
+		mgo.Index{
+			Key:        []string{"qid", "sentence", "match_positions"},
+			Unique:     true,
+			DropDups:   true,
+			Background: false,
+		},
+		mgo.Index{
+			Key:        []string{"username"},
+			Unique:     true,
+			DropDups:   true,
+			Background: false,
+		},
 	}
-	err := session.DB("regexrace").C("regex").EnsureIndex(index)
-	if err != nil {
-		panic("Cannot ensure index ")
+	for _, index := range indexes {
+		err := session.DB("regexrace").C("regex").EnsureIndex(index)
+		if err != nil {
+			panic("Cannot ensure index ")
+		}
 	}
+	fmt.Println("Prepared database indexes.")
 }
 
-// EnsureData is used to make sure the collection reflects questions.json content.
+// EnsureData is used to make sure the question & score collections are ready.
 // The RemoveAll -> Insert is rough but will work at this point
-// (TODO: Improve to do a smart insert)
+// (TODO: Find a beautiful way to write this + Improve to do a smart insert)
 func EnsureData(session *mgo.Session) {
+	// var collections map[string]mgo.Collection
 	var Questions []Question
+	var Scores []Score
 
-	fileContent, err := ioutil.ReadFile(
+	questionContent, err := ioutil.ReadFile(
 		"/go/src/github.com/thylong/regexrace/models/questions.json")
 	if err != nil {
 		panic(err)
 	}
-
-	err = json.Unmarshal(fileContent, &Questions)
+	scoreContent, err := ioutil.ReadFile(
+		"/go/src/github.com/thylong/regexrace/models/default_scores.json")
 	if err != nil {
 		panic(err)
 	}
 
-	collection := session.DB("regexrace").C("questions")
-	Docsum, _ := collection.Count()
+	err = json.Unmarshal(questionContent, &Questions)
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(scoreContent, &Scores)
+	if err != nil {
+		panic(err)
+	}
 
+	scoreCol := session.DB("regexrace").C("scores")
+	scoreCol.RemoveAll(bson.M{})
+	scores := make([]interface{}, len(Scores))
+	for i, v := range Scores {
+		scores[i] = v
+	}
+	err = scoreCol.Insert(scores...)
+	if err != nil {
+		panic(err)
+	}
+
+	questionCol := session.DB("regexrace").C("questions")
+	Docsum, _ := questionCol.Count()
 	if len(Questions) != Docsum {
-		collection.RemoveAll(bson.M{})
+		questionCol.RemoveAll(bson.M{})
 
 		// This convert the []Regex slice to []interface slice
 		// because of Insert() requirements.
@@ -64,18 +97,19 @@ func EnsureData(session *mgo.Session) {
 		for i, v := range Questions {
 			regexes[i] = v
 		}
-		err = collection.Insert(regexes...)
+
+		err = questionCol.Insert(regexes...)
 		if err != nil {
 			panic(err)
 		}
 	}
+	fmt.Println("Ensured data integrity.")
 }
 
 // OpenMongoDB takes a mongo_uri argument and returns a mgosession or panics.
 // See : http://stackoverflow.com/questions/26574594/best-practice-to-maintain-a-mgo-session
-func OpenMongoDB(mongoURI string) *mgo.Session {
+func OpenMongoDB() *mgo.Session {
 	session := viper.Get("MONGO_SESSION").(*mgo.Session).Copy()
-	defer session.Close()
 
 	return session
 }
