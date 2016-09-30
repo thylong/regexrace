@@ -95,6 +95,7 @@ jQuery(document).ready(function($) {
                         console.log("fail");
                         $("form>div").addClass("has-error");
                     }
+                    $("input[name=regex]").focus();
                 }
             });
         }
