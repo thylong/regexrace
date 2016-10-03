@@ -1,0 +1,52 @@
+[
+    {
+        "qid": 1,
+        "sentence": "Hello world !",
+        "match_positions": [[0, 5]]
+    },
+    {
+        "qid": 2,
+        "sentence": "Well, the way they make shows is, they make one show. That show's called a pilot.",
+        "match_positions": [[24, 28], [48, 52], [59, 63]]
+    },
+    {
+        "qid": 3,
+        "sentence": "Then they show that show to the people who make shows, and on the strength of that one show they decide if they're going to make more shows.",
+        "match_positions": [[10, 14]]
+    },
+    {
+        "qid": 4,
+        "sentence": "Some pilots get picked and become television programs. Some don't, become nothing. She starred in one of the ones that became nothing.",
+        "match_positions": [[44, 54], [73, 82], [125, 134]]
+    },
+    {
+        "qid": 5,
+        "sentence": "Your bones don't break, mine do. That's clear. Your cells react to bacteria and viruses differently than mine. You don't get sick, I do.",
+        "match_positions": [[22, 32], [129, 136]]
+    },
+    {
+        "qid": 6,
+        "sentence": "That's also clear. But for some reason, you and I react the exact same way to water. We swallow it too fast, we choke.",
+        "match_positions": [[0, 118]]
+    },
+    {
+        "qid": 7,
+        "sentence": "1920x1600",
+        "match_positions": [[0, 4], [5, 9]]
+    },
+    {
+        "qid": 8,
+        "sentence": "file_name_to_catch.pdf;file_name_to_catch_2.pdf,file_name_to_catch-.pdf:file_name.pdf",
+        "match_positions": [[0, 18], [23, 43], [48, 67], [72, 81]]
+    },
+    {
+        "qid": 9,
+        "sentence": "192.168.0.1butthereis_another-one127.0.0.1",
+        "match_positions": [[0, 10], [33, 41]]
+    },
+    {
+        "qid": 10,
+        "sentence": "192.168.0.1 but there is another one... 127.0.0.1 WAIT 999.999.999.999",
+        "match_positions": [[0, 11], [40, 49]]
+    }
+]

@@ -1,4 +1,4 @@
 ENV: "dev"
-ROLE: "regex-race"
+ROLE: "regexrace"
 MONGO_URI: "mongodb://mongo/regexrace"
 TIMER_DURATION: 60 #  in seconds -- Very low for debugging purpose

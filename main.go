@@ -31,14 +31,15 @@ func main() {
 
 	// Ensure data looks like expected.
 	models.PrepareDB(session)
-	models.EnsureData(session)
+	models.EnsureQuestionData(session)
+	models.EnsureScoreData(session)
 
 	// Middlewares triggered for every requests.
 	c := alice.New(
 		middlewares.LoggingHandler,
 		middlewares.TimeoutHandler,
 		middlewares.AccessLogHandler,
-		middlewares.MongoHandler,
+		// middlewares.MongoHandler,
 	)
 	if viper.GetString("ENV") != "dev" {
 		c.Append(middlewares.PanicRecoveryHandler) // Has to be the latest middleware.

@@ -4,8 +4,6 @@ import (
 	"net/http"
 	"text/template"
 
-	"gopkg.in/mgo.v2/bson"
-
 	"github.com/spf13/viper"
 	"github.com/thylong/regexrace/models"
 )
@@ -14,13 +12,9 @@ import (
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	t := template.Must(template.New("home.html").ParseFiles("static/home.html"))
 
-	var firstQuestion models.Question
-	err := models.MgoSessionFromR(r).DB("regexrace").C("questions").Find(
-		bson.M{"qid": 0}).One(&firstQuestion)
-	if err != nil {
-		panic(err)
-	}
-	htmlSentence := models.FormatHTMLSentence(firstQuestion.Sentence, firstQuestion.MatchPositions)
+	db := models.DB()
+	firstQuestion, _ := db.GetQuestion(1)
+	htmlSentence := firstQuestion.FormatHTMLSentence()
 
 	data := struct {
 		Sentence      string
@@ -31,7 +25,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		QID:           firstQuestion.QID,
 		TimerDuration: viper.GetString("TIMER_DURATION"),
 	}
-	err = t.Execute(w, data)
+	err := t.Execute(w, data)
 	if err != nil {
 		panic(err)
 	}

@@ -2,53 +2,32 @@ package handlers
 
 import (
 	"encoding/json"
-	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"reflect"
 	"regexp"
 
-	mgo "gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
-
 	log "github.com/Sirupsen/logrus"
 	"github.com/thylong/regexrace/models"
 )
 
-// Answer .
+// Answer format.
 type Answer struct {
 	QID      int    `bson:"qid" json:"qid"`
 	Regex    string `bson:"regex" json:"regex"`
 	Modifier string `bson:"modifier" json:"modifier"`
 }
 
-// ErrJSONPayloadEmpty is returned when the JSON payload is empty.
-var ErrJSONPayloadEmpty = errors.New("JSON payload is empty")
-
-// ErrJSONPayloadInvalidBody is returned when the JSON payload is fucked up.
-var ErrJSONPayloadInvalidBody = errors.New("Cannot parse request body")
-
-// ErrJSONPayloadInvalidFormat is returned when the JSON payload is fucked up.
-var ErrJSONPayloadInvalidFormat = errors.New("Invalid JSON format")
-
 // AnswerHandler handler receive the JSON answer for a question_id and
 // return JSON containing a status (fail|success) AND if success a new question.
 func AnswerHandler(w http.ResponseWriter, r *http.Request) {
 	answer := extractAnswerFromRequest(r)
-
-	// Get original question related to the given answer.
-	questionsCol := models.MgoSessionFromR(r).DB("regexrace").C("questions")
-	var originalQuestion models.Question
-	err := questionsCol.Find(bson.M{"qid": answer.QID}).One(&originalQuestion)
-	if err != nil {
-		panic(err)
-	}
+	originalQuestion := GetQuestion(answer.QID)
 
 	responseData := make(map[string]interface{})
-	if isAnswerRegexMatchQuestion(answer, originalQuestion) {
+	if isAnswerMatchQuestion(answer, originalQuestion) {
 		responseData["status"] = "success"
-		responseData["new_question"] = getNewJSONQuestion(answer, questionsCol)
+		responseData["new_question"] = originalQuestion.GetNextJSONQuestion(answer.QID)
 	} else {
 		responseData["status"] = "fail"
 	}
@@ -69,8 +48,7 @@ func extractAnswerFromRequest(r *http.Request) Answer {
 	if len(content) == 0 {
 		panic(ErrJSONPayloadEmpty)
 	}
-	test := string(content)
-	fmt.Println(test)
+
 	err = json.Unmarshal(content, &answer)
 	if err != nil {
 		panic(ErrJSONPayloadInvalidFormat)
@@ -78,50 +56,37 @@ func extractAnswerFromRequest(r *http.Request) Answer {
 	return answer
 }
 
-// getNewQuestion returns a new question with formatted HTML Sentence from the database.
-func getNewQuestion(answer Answer, questionsCol *mgo.Collection) models.Question {
-	var newQuestion models.Question
+// isAnswerMatchQuestion returns true if the regex is a right answer else returns false.
+func isAnswerMatchQuestion(answer Answer, question models.Question) bool {
+	var re = regexp.MustCompile(answer.Regex)
+	submatches := make(map[int][][]int)
 
-	err := questionsCol.Find(
-		bson.M{"qid": answer.QID + 1},
-	).Select(bson.M{"sentence": 1, "qid": 1, "match_positions": 1, "_id": 0}).One(&newQuestion)
-	if err != nil {
-		panic(err)
+	matchPositions := re.FindAllStringSubmatchIndex(question.Sentence, -1)
+	if answer.Modifier != "g" && answer.Modifier != "" {
+		matchPositions = [][]int{matchPositions[0]}
 	}
-	newQuestion.Sentence = models.FormatHTMLSentence(newQuestion.Sentence, newQuestion.MatchPositions)
-	return newQuestion
-}
+	submatches = splitFullMatchAndSubmatches(matchPositions, re.NumSubexp())
 
-// getNewJSONQuestion returns a new JSON question with formatted HTML Sentence from the database.
-func getNewJSONQuestion(answer Answer, questionsCol *mgo.Collection) map[string]interface{} {
-	newQuestion := getNewQuestion(answer, questionsCol)
-
-	JSONQuestion := make(map[string]interface{})
-	JSONQuestion["qid"] = newQuestion.QID
-	JSONQuestion["sentence"] = newQuestion.Sentence
-	JSONQuestion["match_positions"] = newQuestion.MatchPositions
-
-	return JSONQuestion
-}
-
-// isAnswerRegexMatchQuestion returns true if the regex is a right answer else returns false.
-func isAnswerRegexMatchQuestion(answer Answer, originalQuestion models.Question) bool {
-	var re, err = regexp.Compile(answer.Regex)
-	if err != nil {
-		log.Warn(err.Error())
-		return false
-	}
-	var matchPositions interface{}
-	if answer.Modifier == "g" || answer.Modifier == "" {
-		matchPositions = re.FindAllStringIndex(originalQuestion.Sentence, -1)
-	} else {
-		matchPositions = [][]int{re.FindStringIndex(originalQuestion.Sentence)}
+	log.Debug("MatchPositons retrieved: ", matchPositions)
+	log.Debug("Submatches: ", submatches)
+	log.Debug("MatchPositons expected: ", question.MatchPositions)
+	for _, submatch := range submatches {
+		if reflect.DeepEqual(submatch, question.MatchPositions) {
+			return true
+		}
 	}
 
-	fmt.Println(matchPositions)
-	fmt.Println(originalQuestion.MatchPositions)
-	if reflect.DeepEqual(matchPositions, originalQuestion.MatchPositions) {
-		return true
-	}
 	return false
+}
+
+// splitFullMatchAndSubmatches return full match and each group in separated sub-arrays.
+func splitFullMatchAndSubmatches(matchIndexes interface{}, numSub int) map[int][][]int {
+	submatches := make(map[int][][]int)
+	for _, subMatch := range matchIndexes.([][]int) {
+		for num := 0; num <= numSub*2; num += 2 {
+			extract := []int{subMatch[num], subMatch[num+1]}
+			submatches[num] = append(submatches[num], extract)
+		}
+	}
+	return submatches
 }

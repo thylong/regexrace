@@ -5,18 +5,13 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"gopkg.in/mgo.v2/bson"
-
 	"github.com/thylong/regexrace/models"
 )
 
 // ScoreHandler stores scores from the request.
 func ScoreHandler(w http.ResponseWriter, r *http.Request) {
 	score := extractScoreFromRequest(r)
-
-	// Get original question related to the given answer.
-	questionsCol := models.MgoSessionFromR(r).DB("regexrace").C("scores")
-	_, err := questionsCol.Upsert(bson.M{"username": score.Username}, score)
+	err := score.UpsertScore()
 	if err != nil {
 		panic(err)
 	}

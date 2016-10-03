@@ -36,6 +36,7 @@ function ticking(duration, display, callback) {
             );
             $("#timer-container").hide();
             $("#retry").show();
+            $("input[name=regex]").attr("disabled", true);
             return;
         }
         display.text(minutes + ":" + seconds);
