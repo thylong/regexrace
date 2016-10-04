@@ -2,18 +2,30 @@
 
 // Send the score at the end of the time to the /score handler.
 function submitScore(score, username) {
-    $.ajax({
-        type: "POST",
-        url: "/score",
-        data: JSON.stringify({
-            "best_score": score,
-            "username": "user"+username
-        }),
-        dataType: "json",
-        success: function(data) {
-            console.log("Submitted score !");
-        }
-    });
+    if (username !== "" && username !== null && !isNaN(username)) {
+        console.log(username);
+        console.log(username !== Nan);
+        $.ajax({
+            type: "POST",
+            url: "/score",
+            data: JSON.stringify({
+                "best_score": score,
+                "username": username
+            }),
+            dataType: "json",
+            success: function(data) {
+                $("form.score>div").removeClass("has-error");
+                $('#scoreModal').modal('toggle');
+                console.log("Submitted score !");
+            },
+            error: function(data) {
+                $("form.score>div").addClass("has-error");
+                console.log("Submitted score !");
+            }
+        });
+    } else {
+        $("form.score>div").addClass("has-error");
+    }
 }
 
 // ticking starts the visual timer and trigger the callback when timing out.
@@ -30,10 +42,7 @@ function ticking(duration, display, callback) {
             display.text("00:00");
             timer = duration;
             clearInterval(interval);
-            submitScore(
-                parseInt($("#score").text()),
-                String(Math.floor((Math.random() * 100) + 1))
-            );
+            $("#submitModalButton").show();
             $("#timer-container").hide();
             $("#retry").show();
             $("input[name=regex]").attr("disabled", true);
@@ -51,6 +60,13 @@ jQuery(document).ready(function($) {
     localStorage.removeItem('trigger_timer');
     $("#retry").click(function() {
         location.reload();
+    });
+    $("#submitScore").click(function() {
+        submitScore(
+            parseInt($("#score").text()),
+            parseInt($("#username").val()),
+            String(Math.floor((Math.random() * 100) + 1))
+        );
     });
 
     display = $('#timer');

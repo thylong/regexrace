@@ -52,13 +52,38 @@
                                 </div>
                             </form>
                         </p>
-                        <div class="col-md-6">
+                        <div class="col-md-8">
                             <h2>Score : <span id="score">0</span></h2>
                         </div>
-                        <div class="col-md-6 retry-timer">
+                        <div class="col-md-4 retry-timer">
                             <button id="retry" type="button" class="btn btn-primary" style="display: none; margin-top: 20px;">Retry</button>
+                            <button type="button" id="submitModalButton" class="btn btn-primary" data-toggle="modal" data-target="#scoreModal" style="display: none; margin-top: 20px;">Submit score</button>
                             <h2 id="timer-container">Timer : <span id="timer" data-duration="{{.TimerDuration}}">01:00</span></h2>
                         </div>
+                    </div>
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="scoreModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                      <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <h4 class="modal-title" id="myModalLabel">Score</h4>
+                          </div>
+                          <div class="modal-body">
+                              <p>Choose a Username : </p>
+                            <form class="score" action="score" method="post">
+                                <div>
+                                    <input class="form-control" type="text" name="name" id="username" value="" placeholder="Write player name.">
+                                </div>
+                            </form>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" id="submitScore">Submit</button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
                     <div class="mastfoot">
