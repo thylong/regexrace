@@ -5,13 +5,15 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/thylong/regexrace/middlewares"
 	"github.com/thylong/regexrace/models"
 )
 
 // ScoreHandler stores scores from the request.
 func ScoreHandler(w http.ResponseWriter, r *http.Request) {
 	score := extractScoreFromRequest(r)
-	err := score.UpsertScore()
+	token, err := middlewares.FromAuthHeader(r)
+	err = score.SubmitScore(token)
 	if err != nil {
 		panic(err)
 	}
@@ -26,7 +28,7 @@ func ScoreHandler(w http.ResponseWriter, r *http.Request) {
 
 // extractScoreFromRequest validates JSON Payload and store the score.
 func extractScoreFromRequest(r *http.Request) models.Score {
-	score := models.Score{}
+	score := models.Score{Db: MgoDBFromR(r)}
 
 	content, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()

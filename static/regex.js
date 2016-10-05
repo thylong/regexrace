@@ -1,18 +1,23 @@
 // DISCLAIMER: JS is not my thing, So the following can be really improved...
 
 // Send the score at the end of the time to the /score handler.
-function submitScore(score, username) {
-    if (username !== "" && username !== null && !isNaN(username)) {
-        console.log(username);
-        console.log(username !== Nan);
+function submitScore() {
+    score = parseInt($("#score").text());
+    username = $("#username").val();
+
+    if (username !== "" && username !== null) {
         $.ajax({
             type: "POST",
             url: "/score",
             data: JSON.stringify({
                 "best_score": score,
-                "username": username
+                "username": username,
+                "token": localStorage.getItem('regexrace_token'),
             }),
             dataType: "json",
+            beforeSend : function(xhr) {
+                xhr.setRequestHeader("Authorization", "Bearer "+localStorage.getItem('regexrace_token'));
+            },
             success: function(data) {
                 $("form.score>div").removeClass("has-error");
                 $('#scoreModal').modal('toggle');
@@ -26,6 +31,17 @@ function submitScore(score, username) {
     } else {
         $("form.score>div").addClass("has-error");
     }
+}
+
+// Call /auth to get a token.
+function getToken() {
+    $.ajax({
+        type: "GET",
+        url: "/auth",
+        success: function(data) {
+            localStorage.setItem('regexrace_token', data.token);
+        }
+    });
 }
 
 // ticking starts the visual timer and trigger the callback when timing out.
@@ -57,16 +73,13 @@ function ticking(duration, display, callback) {
 ******************* WHEN PAGE READY *********************
 ********************************************************/
 jQuery(document).ready(function($) {
-    localStorage.removeItem('trigger_timer');
+    localStorage.removeItem('regexrace_timer');
+    localStorage.removeItem('regexrace_token');
     $("#retry").click(function() {
         location.reload();
     });
     $("#submitScore").click(function() {
-        submitScore(
-            parseInt($("#score").text()),
-            parseInt($("#username").val()),
-            String(Math.floor((Math.random() * 100) + 1))
-        );
+        submitScore();
     });
 
     display = $('#timer');
@@ -81,10 +94,11 @@ jQuery(document).ready(function($) {
     display.text(minutes + ":" + seconds);
 
     $("input").keypress(function (e) {
-        var trigger_timer = localStorage.getItem('trigger_timer');
-        if( !trigger_timer ) {
+        var regexrace_timer = localStorage.getItem('regexrace_timer');
+        if( !regexrace_timer ) {
             ticking(duration, display);
-            localStorage.setItem('trigger_timer', true);
+            getToken();
+            localStorage.setItem('regexrace_timer', true);
         }
         var key = e.which;
         if(key == 13) { // If the Key pressed is Enter, send call to /answer.
@@ -99,6 +113,9 @@ jQuery(document).ready(function($) {
                 url: "/answer",
                 data: JSON.stringify(answer),
                 dataType: "json",
+                beforeSend : function(xhr) {
+                    xhr.setRequestHeader("Authorization", "Bearer "+localStorage.getItem('regexrace_token'));
+                },
                 success: function(data) {
                     if (data.status == "success") {
                         console.log("success");

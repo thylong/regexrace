@@ -39,19 +39,22 @@ func main() {
 		middlewares.LoggingHandler,
 		middlewares.TimeoutHandler,
 		middlewares.AccessLogHandler,
-		// middlewares.MongoHandler,
+		middlewares.MongoHandler,
 	)
 	if viper.GetString("ENV") != "dev" {
 		c.Append(middlewares.PanicRecoveryHandler) // Has to be the latest middleware.
 	}
 
 	// Register Handlers.
-	http.Handle("/status", c.ThenFunc(http.HandlerFunc(handlers.StatusHandler)))
-	http.Handle("/home", c.ThenFunc(http.HandlerFunc(handlers.HomeHandler)))
-	http.Handle("/leaderboard", c.ThenFunc(http.HandlerFunc(handlers.LeaderboardHandler)))
-	http.Handle("/answer", c.ThenFunc(http.HandlerFunc(handlers.AnswerHandler)))
-	http.Handle("/score", c.ThenFunc(http.HandlerFunc(handlers.ScoreHandler)))
-	// Serve css and js
-	http.Handle("/static/", c.ThenFunc(http.HandlerFunc(handlers.StaticHandler)))
+	http.Handle("/home", c.ThenFunc(handlers.HomeHandler))
+	http.Handle("/status", c.ThenFunc(handlers.StatusHandler))
+	http.Handle("/leaderboard", c.ThenFunc(handlers.LeaderboardHandler))
+	http.Handle("/auth", c.ThenFunc(handlers.AuthHandler))
+	http.Handle("/score", c.ThenFunc(handlers.ScoreHandler))
+	// Serve css and js static files.
+	http.Handle("/static/", c.ThenFunc(handlers.StaticHandler))
+	// Following Handlers requiring auth.
+	c = c.Append(middlewares.WithAuth)
+	http.Handle("/answer", c.ThenFunc(handlers.AnswerHandler))
 	http.ListenAndServe(":8080", nil)
 }

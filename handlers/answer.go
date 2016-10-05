@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"regexp"
 
-	log "github.com/Sirupsen/logrus"
+	"github.com/thylong/regexrace/middlewares"
 	"github.com/thylong/regexrace/models"
 )
 
@@ -22,10 +22,20 @@ type Answer struct {
 // return JSON containing a status (fail|success) AND if success a new question.
 func AnswerHandler(w http.ResponseWriter, r *http.Request) {
 	answer := extractAnswerFromRequest(r)
-	originalQuestion := GetQuestion(answer.QID)
+
+	db := MgoDBFromR(r)
+	originalQuestion, err := db.GetQuestion(answer.QID)
+	if err != nil {
+		panic(err)
+	}
 
 	responseData := make(map[string]interface{})
 	if isAnswerMatchQuestion(answer, originalQuestion) {
+		token, _ := middlewares.FromAuthHeader(r)
+
+		score := models.Score{Db: MgoDBFromR(r), Username: token, BestScore: answer.QID, Submitted: false}
+		score.UpsertScore()
+
 		responseData["status"] = "success"
 		responseData["new_question"] = originalQuestion.GetNextJSONQuestion(answer.QID)
 	} else {
@@ -67,9 +77,6 @@ func isAnswerMatchQuestion(answer Answer, question models.Question) bool {
 	}
 	submatches = splitFullMatchAndSubmatches(matchPositions, re.NumSubexp())
 
-	log.Debug("MatchPositons retrieved: ", matchPositions)
-	log.Debug("Submatches: ", submatches)
-	log.Debug("MatchPositons expected: ", question.MatchPositions)
 	for _, submatch := range submatches {
 		if reflect.DeepEqual(submatch, question.MatchPositions) {
 			return true

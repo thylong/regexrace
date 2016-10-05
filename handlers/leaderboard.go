@@ -13,9 +13,9 @@ import (
 func LeaderboardHandler(w http.ResponseWriter, r *http.Request) {
 	t := template.Must(template.New("leaderboard.html").ParseFiles("static/leaderboard.html"))
 
-	db := models.DB()
+	db := MgoDBFromR(r)
 	var scores []models.Score
-	err := db.C("scores").Find(bson.M{}).Sort("-best_score").All(&scores)
+	err := db.C("scores").Find(bson.M{"submitted": true}).Sort("-best_score").All(&scores)
 	if err != nil {
 		panic(err)
 	}

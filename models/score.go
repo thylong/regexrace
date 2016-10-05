@@ -11,16 +11,17 @@ import (
 
 // Score represent a unique score.
 type Score struct {
-	MongoDatabase
+	Db MongoDatabase
 	// ID        bson.ObjectId `bson:"_id,omitempty" json:"id"`
 	Username  string `bson:"username" json:"username"`
 	BestScore int    `bson:"best_score" json:"best_score"`
+	Submitted bool   `bson:"submitted" json:"submitted"`
 }
 
 // UpsertScore store/replace a score.
 func (score *Score) UpsertScore() error {
-	db := DB()
-	_, err := db.C("scores").Upsert(bson.M{"username": score.Username}, score)
+	_, err := score.Db.C("scores").Upsert(
+		bson.M{"username": score.Username}, score)
 	if err != nil {
 		log.Warning(err)
 		return err
@@ -28,7 +29,42 @@ func (score *Score) UpsertScore() error {
 	return nil
 }
 
-// EnsureScoreData is used to make sure the question & score collections are ready.
+// GetScores returns all scores.
+func (db *MongoDatabase) GetScores() ([]Score, error) {
+	var scores []Score
+	err := db.C("scores").Find(bson.M{}).All(&scores)
+	if err != nil {
+		log.Warning(err)
+		return nil, err
+	}
+	return scores, nil
+}
+
+// SubmitScore replace token by username and set submitted to true.
+func (score *Score) SubmitScore(token string) error {
+	update := bson.M{"$set": bson.M{
+		"username": score.Username, "submitted": true}}
+
+	err := score.Db.C("scores").Update(
+		bson.M{"username": token}, update)
+	if err != nil {
+		log.Warning(err)
+		return err
+	}
+	return nil
+}
+
+// InsertScore store a new score.
+func (score *Score) InsertScore() error {
+	err := score.Db.C("scores").Insert(score)
+	if err != nil {
+		log.Warning(err)
+		return err
+	}
+	return nil
+}
+
+// EnsureScoreData makes sure the score collection is ready.
 // The RemoveAll -> Insert is rough but will work at this point
 // (TODO: Find a beautiful way to write this + Improve to do a smart insert)
 func EnsureScoreData(session *mgo.Session) {

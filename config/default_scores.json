@@ -1,18 +1,22 @@
 [
     {
         "username": "Trisha",
-        "best_score": 2
+        "best_score": 2,
+        "submitted": true
     },
     {
         "username": "Sofia",
-        "best_score": 2
+        "best_score": 2,
+        "submitted": true
     },
     {
         "username": "Benoit",
-        "best_score": 1
+        "best_score": 1,
+        "submitted": true
     },
     {
         "username": "Oren",
-        "best_score": 1
+        "best_score": 1,
+        "submitted": true
     }
 ]

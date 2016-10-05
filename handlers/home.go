@@ -5,14 +5,13 @@ import (
 	"text/template"
 
 	"github.com/spf13/viper"
-	"github.com/thylong/regexrace/models"
 )
 
 // HomeHandler returns the Homepage and the first question.
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	t := template.Must(template.New("home.html").ParseFiles("static/home.html"))
 
-	db := models.DB()
+	db := MgoDBFromR(r)
 	firstQuestion, _ := db.GetQuestion(1)
 	htmlSentence := firstQuestion.FormatHTMLSentence()
 
