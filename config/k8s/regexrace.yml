@@ -6,6 +6,7 @@ metadata:
     name: web
 spec:
   type: LoadBalancer
+  loadBalancerIP: 104.196.118.31
   ports:
     - port: 80
       targetPort: 8080
@@ -30,6 +31,7 @@ spec:
     spec:
       containers:
       - image: gcr.io/regexrace/regexrace:v1
+        imagePullPolicy: Always
         name: web
         ports:
         - containerPort: 8080
