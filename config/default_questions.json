@@ -48,5 +48,10 @@
         "qid": 10,
         "sentence": "192.168.0.1 but there is another one... 127.0.0.1 WAIT 999.999.999.999",
         "match_positions": [[0, 11], [40, 49]]
+    },
+    {
+        "qid": 11,
+        "sentence": "Call me maybe: (646) 877-4097 or +1(646)8774097",
+        "match_positions": [[15, 29], [33, 47]]
     }
 ]
