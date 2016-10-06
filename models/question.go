@@ -84,21 +84,19 @@ func EnsureQuestionData(session *mgo.Session) {
 	}
 
 	questionCol := session.DB("regexrace").C("questions")
-	Docsum, _ := questionCol.Count()
-	if len(Questions) != Docsum {
-		questionCol.RemoveAll(bson.M{})
+	questionCol.RemoveAll(bson.M{})
 
-		// This convert the []Regex slice to []interface slice
-		// because of Insert() requirements.
-		regexes := make([]interface{}, len(Questions))
-		for i, v := range Questions {
-			regexes[i] = v
-		}
-
-		err = questionCol.Insert(regexes...)
-		if err != nil {
-			panic(err)
-		}
+	// This convert the []Regex slice to []interface slice
+	// because of Insert() requirements.
+	regexes := make([]interface{}, len(Questions))
+	for i, v := range Questions {
+		regexes[i] = v
 	}
+
+	err = questionCol.Insert(regexes...)
+	if err != nil {
+		panic(err)
+	}
+
 	log.Info("Ensured Questions integrity.")
 }

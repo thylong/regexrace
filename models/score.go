@@ -68,28 +68,30 @@ func (score *Score) InsertScore() error {
 // The RemoveAll -> Insert is rough but will work at this point
 // (TODO: Find a beautiful way to write this + Improve to do a smart insert)
 func EnsureScoreData(session *mgo.Session) {
-	var Scores []Score
-
-	scoreContent, err := ioutil.ReadFile(
-		"/go/src/github.com/thylong/regexrace/config/default_scores.json")
-	if err != nil {
-		panic(err)
-	}
-
-	err = json.Unmarshal(scoreContent, &Scores)
-	if err != nil {
-		panic(err)
-	}
-
 	scoreCol := session.DB("regexrace").C("scores")
-	scoreCol.RemoveAll(bson.M{})
-	scores := make([]interface{}, len(Scores))
-	for i, v := range Scores {
-		scores[i] = v
-	}
-	err = scoreCol.Insert(scores...)
-	if err != nil {
-		panic(err)
+	Docsum, _ := scoreCol.Count()
+	if Docsum <= 3 {
+		var Scores []Score
+
+		scoreContent, err := ioutil.ReadFile(
+			"/go/src/github.com/thylong/regexrace/config/default_scores.json")
+		if err != nil {
+			panic(err)
+		}
+
+		err = json.Unmarshal(scoreContent, &Scores)
+		if err != nil {
+			panic(err)
+		}
+		scoreCol.RemoveAll(bson.M{})
+		scores := make([]interface{}, len(Scores))
+		for i, v := range Scores {
+			scores[i] = v
+		}
+		err = scoreCol.Insert(scores...)
+		if err != nil {
+			panic(err)
+		}
 	}
 	log.Info("Ensured Scores integrity.")
 }
