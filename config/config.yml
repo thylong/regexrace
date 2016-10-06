@@ -1,6 +1,6 @@
 ENV: "dev"
 ROLE: "regexrace"
 MONGO_URI: "mongodb://mongo/regexrace"
-TIMER_DURATION: 2 #  in seconds -- Very low for debugging purpose
-TOKEN_TTL: 6000000
+TIMER_DURATION: 60 #  in seconds -- Very low for debugging purpose
+TOKEN_TTL: 60
 TOKEN_SECRET: "0044af6fd714"
