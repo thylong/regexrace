@@ -46,7 +46,7 @@ func main() {
 	}
 
 	// Register Handlers.
-	http.Handle("/home", c.ThenFunc(handlers.HomeHandler))
+	http.Handle("/", c.ThenFunc(handlers.HomeHandler))
 	http.Handle("/status", c.ThenFunc(handlers.StatusHandler))
 	http.Handle("/leaderboard", c.ThenFunc(handlers.LeaderboardHandler))
 	http.Handle("/auth", c.ThenFunc(handlers.AuthHandler))
