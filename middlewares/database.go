@@ -13,10 +13,10 @@ import (
 func MongoHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		dbSession := viper.Get("MONGO_SESSION").(*mgo.Session).Copy()
-		defer dbSession.Close()
 		r = r.WithContext(
 			context.WithValue(r.Context(), "db", dbSession))
 
 		next.ServeHTTP(w, r)
+		dbSession.Close()
 	})
 }
