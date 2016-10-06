@@ -54,7 +54,7 @@ func (db *MongoDatabase) GetQuestion(qid int) (Question, error) {
 	return originalQuestion, nil
 }
 
-// GetNextJSONQuestion returns a new JSON question with formatted HTML Sentence from the database.
+// GetNextJSONQuestion returns the next JSON question with HTML Sentence.
 func (q *Question) GetNextJSONQuestion(qid int) map[string]interface{} {
 	newQuestion, _ := q.Db.GetQuestion(qid + 1)
 

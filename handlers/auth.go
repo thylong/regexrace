@@ -13,11 +13,13 @@ import (
 // AuthHandler returns a JWT token.
 func AuthHandler(w http.ResponseWriter, r *http.Request) {
 	signingKey := []byte(viper.GetString("TOKEN_SIGNATURE"))
-	expireTime, _ := strconv.ParseInt(viper.GetString("TOKEN_TTL"), 10, 32)
+
+	expTime, _ := strconv.ParseInt(viper.GetString("TOKEN_TTL"), 10, 32)
 	claims := &jwt.StandardClaims{
-		ExpiresAt: time.Now().Add(time.Second * time.Duration(expireTime)).Unix(),
+		ExpiresAt: time.Now().Add(time.Second * time.Duration(expTime)).Unix(),
 		Issuer:    viper.GetString("ROLE"),
 	}
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signedString, err := token.SignedString(signingKey)
 	if err != nil {

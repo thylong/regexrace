@@ -33,7 +33,12 @@ func AnswerHandler(w http.ResponseWriter, r *http.Request) {
 	if isAnswerMatchQuestion(answer, originalQuestion) {
 		token, _ := middlewares.FromAuthHeader(r)
 
-		score := models.Score{Db: MgoDBFromR(r), Username: token, BestScore: answer.QID, Submitted: false}
+		score := models.Score{
+			Db:        MgoDBFromR(r),
+			Username:  token,
+			BestScore: answer.QID,
+			Submitted: false,
+		}
 		score.UpsertScore()
 
 		responseData["status"] = "success"
@@ -66,7 +71,7 @@ func extractAnswerFromRequest(r *http.Request) Answer {
 	return answer
 }
 
-// isAnswerMatchQuestion returns true if the regex is a right answer else returns false.
+// isAnswerMatchQuestion returns true if the regex matches else returns false.
 func isAnswerMatchQuestion(answer Answer, question models.Question) bool {
 	var re = regexp.MustCompile(answer.Regex)
 	submatches := make(map[int][][]int)
@@ -75,7 +80,7 @@ func isAnswerMatchQuestion(answer Answer, question models.Question) bool {
 	if answer.Modifier != "g" && answer.Modifier != "" {
 		matchPositions = [][]int{matchPositions[0]}
 	}
-	submatches = splitFullMatchAndSubmatches(matchPositions, re.NumSubexp())
+	submatches = splitGroups(matchPositions, re.NumSubexp())
 
 	for _, submatch := range submatches {
 		if reflect.DeepEqual(submatch, question.MatchPositions) {
@@ -86,8 +91,8 @@ func isAnswerMatchQuestion(answer Answer, question models.Question) bool {
 	return false
 }
 
-// splitFullMatchAndSubmatches return full match and each group in separated sub-arrays.
-func splitFullMatchAndSubmatches(matchIndexes interface{}, numSub int) map[int][][]int {
+// splitGroups return fullmatch and groups in separated arrays.
+func splitGroups(matchIndexes interface{}, numSub int) map[int][][]int {
 	submatches := make(map[int][][]int)
 	for _, subMatch := range matchIndexes.([][]int) {
 		for num := 0; num <= numSub*2; num += 2 {

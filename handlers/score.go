@@ -13,6 +13,10 @@ import (
 func ScoreHandler(w http.ResponseWriter, r *http.Request) {
 	score := extractScoreFromRequest(r)
 	token, err := middlewares.FromAuthHeader(r)
+	if err != nil {
+		panic(err)
+	}
+
 	err = score.SubmitScore(token)
 	if err != nil {
 		panic(err)
@@ -35,6 +39,7 @@ func extractScoreFromRequest(r *http.Request) models.Score {
 	if err != nil {
 		panic(ErrJSONPayloadInvalidBody)
 	}
+
 	if len(content) == 0 {
 		panic(ErrJSONPayloadEmpty)
 	}

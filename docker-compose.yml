@@ -10,3 +10,5 @@ services:
             - .:/go/src/github.com/thylong/regexrace
         links:
             - mongo
+        environment:
+            TOKEN_TTL: 5
