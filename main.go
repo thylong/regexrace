@@ -53,6 +53,7 @@ func main() {
 	http.Handle("/score", c.ThenFunc(handlers.ScoreHandler))
 	// Serve css and js static files.
 	http.Handle("/static/", c.ThenFunc(handlers.StaticHandler))
+	http.Handle("/robots.txt", c.ThenFunc(handlers.RobotsHandler))
 	// Following Handlers requiring auth.
 	c = c.Append(middlewares.WithAuth)
 	http.Handle("/answer", c.ThenFunc(handlers.AnswerHandler))
