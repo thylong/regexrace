@@ -1,0 +1,27 @@
+sudo: required
+language: go
+go:
+  - '1.7'
+services:
+  - docker
+
+cache:
+  directories:
+    - "$HOME/google-cloud-sdk/"
+# install:
+# Gcloud auth and Container image storage.
+# script:
+#   - go test ./...
+after_success:
+  - if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; curl https://sdk.cloud.google.com | bash; fi
+  # Add gcloud to $PATH
+  - source /home/travis/google-cloud-sdk/path.bash.inc
+  - gcloud version
+  - gcloud --quiet components update kubectl
+  # Auth flow
+  - bash auth-gcloud.sh
+  # Push to Google container registry
+  - docker build -t gcr.io/$PROJECT_ID/$PROJECT_ID:v1 .
+  - gcloud docker push gcr.io/$PROJECT_ID/$PROJECT_ID:v1 > /dev/null
+  - gcloud container clusters get-credentials $PROJECT_ID
+  - bash kubectl-deploy.sh

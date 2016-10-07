@@ -1,6 +1,8 @@
 RegexRace
 =========
 
+.. image:: https://travis-ci.org/thylong/regexrace.svg?branch=master
+    :target: https://travis-ci.org/thylong/regexrace
 
 RegexRace is a small game to test your POSIX Regex writing skills.
 
