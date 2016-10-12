@@ -21,7 +21,7 @@ after_success:
   # Auth flow
   - bash auth-gcloud.sh
   # Push to Google container registry
-  - docker build -t gcr.io/$PROJECT_ID/$PROJECT_ID:v1 .
-  - gcloud docker push gcr.io/$PROJECT_ID/$PROJECT_ID:v1 > /dev/null
-  - gcloud container clusters get-credentials $PROJECT_ID
+  - docker build -t gcr.io/$CLOUDSDK_CORE_PROJECT/$CLOUDSDK_CORE_PROJECT:v1 .
+  - gcloud docker push gcr.io/$CLOUDSDK_CORE_PROJECT/$CLOUDSDK_CORE_PROJECT:v1 > /dev/null
+  - gcloud container clusters get-credentials $CLOUDSDK_CORE_PROJECT
   - bash kubectl-deploy.sh
