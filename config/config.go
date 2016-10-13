@@ -14,7 +14,7 @@ func LoadConfig() {
 
 	err := viper.ReadInConfig()
 	if err != nil {
-		log.Fatalf("Fatal error config file: %s \n", err)
+		log.Fatalf(err.Error())
 	}
 	for _, settingKey := range viper.AllKeys() {
 		viper.BindEnv(settingKey, strings.ToUpper(settingKey))
