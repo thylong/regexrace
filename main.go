@@ -2,9 +2,6 @@ package main
 
 import (
 	"net/http"
-	"time"
-
-	mgo "gopkg.in/mgo.v2"
 
 	"github.com/spf13/viper"
 	"github.com/thylong/regexrace/config"
@@ -19,13 +16,7 @@ func main() {
 	config.LoadConfig()
 
 	// Create and store a Mongo session for every requests.
-	session, err := mgo.Dial(viper.GetString("MONGO_URI"))
-	if err != nil {
-		panic(err)
-	}
-	session.SetSafe(&mgo.Safe{})
-	session.SetSyncTimeout(3 * time.Second)
-	session.SetSocketTimeout(3 * time.Second)
+	session := models.NewSession()
 	viper.Set("MONGO_SESSION", session)
 	defer session.Close()
 

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"os"
 	"text/template"
 
 	"github.com/spf13/viper"
@@ -9,7 +10,7 @@ import (
 
 // HomeHandler returns the Homepage and the first question.
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	t := template.Must(template.New("home.html").ParseFiles("static/home.html"))
+	t := template.Must(template.New("home.html").ParseFiles(os.Getenv("GOPATH") + "/src/github.com/thylong/regexrace/static/home.html"))
 
 	db := MgoDBFromR(r)
 	firstQuestion, _ := db.GetQuestion(1)
@@ -24,8 +25,5 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		QID:           firstQuestion.QID,
 		TimerDuration: viper.GetString("TIMER_DURATION"),
 	}
-	err := t.Execute(w, data)
-	if err != nil {
-		panic(err)
-	}
+	t.Execute(w, data)
 }
