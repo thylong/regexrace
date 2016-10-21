@@ -21,10 +21,7 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedString, err := token.SignedString(signingKey)
-	if err != nil {
-		panic(err)
-	}
+	signedString, _ := token.SignedString(signingKey)
 
 	responseData := make(map[string]interface{})
 	responseData["token"] = signedString

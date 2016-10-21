@@ -6,7 +6,6 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
-	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -69,7 +68,7 @@ func (q *Question) GetNextJSONQuestion(qid int) map[string]interface{} {
 // EnsureQuestionData is used to make sure the question collection ready.
 // The RemoveAll -> Insert is rough but will work at this point
 // (TODO: Find a beautiful way to write this + Improve to do a smart insert)
-func EnsureQuestionData(session *mgo.Session) {
+func EnsureQuestionData(session Session) {
 	var Questions []Question
 
 	questionContent, err := ioutil.ReadFile(

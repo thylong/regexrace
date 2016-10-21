@@ -3,6 +3,7 @@ package middlewares
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/spf13/viper"
@@ -18,6 +19,22 @@ func WithAuth(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+// FromAuthHeader is a "TokenExtractor" that takes a give request and extracts
+// the JWT token from the Authorization header.
+func FromAuthHeader(r *http.Request) (string, error) {
+	authHeader := r.Header.Get("Authorization")
+	if authHeader == "" {
+		return "", nil // No error, just no token
+	}
+
+	authHeaderParts := strings.Split(authHeader, " ")
+	if len(authHeaderParts) != 2 || strings.ToLower(authHeaderParts[0]) != "bearer" {
+		return "", fmt.Errorf("Authorization header format must be Bearer {token}")
+	}
+
+	return authHeaderParts[1], nil
 }
 
 // IsValidAuth returns true if the token submitted is valid otherwise false.

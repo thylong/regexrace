@@ -57,15 +57,13 @@ func extractAnswerFromRequest(r *http.Request) Answer {
 
 	content, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
-	if err != nil {
-		panic(ErrJSONPayloadInvalidBody)
-	}
+
 	if len(content) == 0 {
 		panic(ErrJSONPayloadEmpty)
 	}
 
 	err = json.Unmarshal(content, &answer)
-	if err != nil {
+	if (err != nil || answer == Answer{QID: 0, Modifier: "g"}) {
 		panic(ErrJSONPayloadInvalidFormat)
 	}
 	return answer

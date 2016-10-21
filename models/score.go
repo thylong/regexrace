@@ -5,13 +5,12 @@ import (
 	"io/ioutil"
 
 	log "github.com/Sirupsen/logrus"
-	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
 // Score represent a unique score.
 type Score struct {
-	Db MongoDatabase
+	Db DataLayer
 	// ID        bson.ObjectId `bson:"_id,omitempty" json:"id"`
 	Username  string `bson:"username" json:"username"`
 	BestScore int    `bson:"best_score" json:"best_score"`
@@ -33,6 +32,17 @@ func (score *Score) UpsertScore() error {
 func (db *MongoDatabase) GetScores() ([]Score, error) {
 	var scores []Score
 	err := db.C("scores").Find(bson.M{}).All(&scores)
+	if err != nil {
+		log.Warning(err)
+		return nil, err
+	}
+	return scores, nil
+}
+
+// FindTopScores returns all scores.
+func (db *MongoDatabase) FindTopScores() ([]Score, error) {
+	var scores []Score
+	err := db.C("scores").Find(bson.M{"submitted": true}).Sort("-best_score").All(&scores)
 	if err != nil {
 		log.Warning(err)
 		return nil, err
@@ -67,7 +77,7 @@ func (score *Score) InsertScore() error {
 // EnsureScoreData makes sure the score collection is ready.
 // The RemoveAll -> Insert is rough but will work at this point
 // (TODO: Find a beautiful way to write this + Improve to do a smart insert)
-func EnsureScoreData(session *mgo.Session) {
+func EnsureScoreData(session Session) {
 	scoreCol := session.DB("regexrace").C("scores")
 	Docsum, _ := scoreCol.Count()
 	if Docsum <= 3 {

@@ -11,7 +11,10 @@ import (
 
 // ScoreHandler stores scores from the request.
 func ScoreHandler(w http.ResponseWriter, r *http.Request) {
-	score := extractScoreFromRequest(r)
+	score, err := extractScoreFromRequest(r)
+	if err != nil {
+		panic(err)
+	}
 	token, err := middlewares.FromAuthHeader(r)
 	if err != nil {
 		panic(err)
@@ -31,22 +34,19 @@ func ScoreHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // extractScoreFromRequest validates JSON Payload and store the score.
-func extractScoreFromRequest(r *http.Request) models.Score {
+func extractScoreFromRequest(r *http.Request) (models.Score, error) {
 	score := models.Score{Db: MgoDBFromR(r)}
 
 	content, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
-	if err != nil {
-		panic(ErrJSONPayloadInvalidBody)
-	}
 
 	if len(content) == 0 {
-		panic(ErrJSONPayloadEmpty)
+		return score, ErrJSONPayloadEmpty
 	}
 
 	err = json.Unmarshal(content, &score)
-	if err != nil {
-		panic(ErrJSONPayloadInvalidFormat)
+	if (err != nil || score == models.Score{Db: MgoDBFromR(r), Username: "", BestScore: 0}) {
+		return score, ErrJSONPayloadInvalidFormat
 	}
-	return score
+	return score, nil
 }
