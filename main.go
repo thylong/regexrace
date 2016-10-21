@@ -28,13 +28,11 @@ func main() {
 	// Middlewares triggered for every requests.
 	c := alice.New(
 		middlewares.LoggingHandler,
-		middlewares.TimeoutHandler,
 		middlewares.AccessLogHandler,
+		middlewares.TimeoutHandler,
 		middlewares.MongoHandler,
+		middlewares.PanicRecoveryHandler,
 	)
-	if viper.GetString("ENV") != "dev" {
-		c.Append(middlewares.PanicRecoveryHandler) // Has to be the latest middleware.
-	}
 
 	// Register Handlers.
 	http.Handle("/", c.ThenFunc(handlers.HomeHandler))
