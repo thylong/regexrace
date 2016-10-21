@@ -14,20 +14,16 @@ func PanicRecoveryHandler(next http.Handler) http.Handler {
 		defer func() {
 			if err := recover(); err != nil {
 				status := 500
-
-				if status >= 500 {
-					log.Warn(err)
-				}
+				w.WriteHeader(status)
 
 				if err != nil {
-					w.WriteHeader(500)
+					log.Warn(err)
 
 					if viper.GetString("ENV") == "dev" {
 						fmt.Fprintf(w, "Error: "+err.(error).Error())
 					}
 					return
 				}
-				w.WriteHeader(status)
 			}
 		}()
 		next.ServeHTTP(w, r)
