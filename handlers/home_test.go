@@ -34,6 +34,6 @@ func TestHomeHandler(t *testing.T) {
 		t.Fatal(err)
 	}
 	if len(content) == 0 {
-		t.Fatal(err)
+		t.Fatal("Home handler returned empty body")
 	}
 }
