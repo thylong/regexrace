@@ -10,16 +10,14 @@ import (
 
 // Score represent a unique score.
 type Score struct {
-	Db DataLayer
-	// ID        bson.ObjectId `bson:"_id,omitempty" json:"id"`
 	Username  string `bson:"username" json:"username"`
 	BestScore int    `bson:"best_score" json:"best_score"`
 	Submitted bool   `bson:"submitted" json:"submitted"`
 }
 
 // UpsertScore store/replace a score.
-func (score *Score) UpsertScore() error {
-	_, err := score.Db.C("scores").Upsert(
+func (score *Score) UpsertScore(db DataLayer) error {
+	_, err := db.C("scores").Upsert(
 		bson.M{"username": score.Username}, score)
 	if err != nil {
 		log.Warning(err)
@@ -51,11 +49,11 @@ func (db *MongoDatabase) FindTopScores() ([]Score, error) {
 }
 
 // SubmitScore replace token by username and set submitted to true.
-func (score *Score) SubmitScore(token string) error {
+func (score *Score) SubmitScore(db DataLayer, token string) error {
 	update := bson.M{"$set": bson.M{
 		"username": score.Username, "submitted": true}}
 
-	err := score.Db.C("scores").Update(
+	err := db.C("scores").Update(
 		bson.M{"username": token}, update)
 	if err != nil {
 		log.Warning(err)
@@ -65,8 +63,8 @@ func (score *Score) SubmitScore(token string) error {
 }
 
 // InsertScore store a new score.
-func (score *Score) InsertScore() error {
-	err := score.Db.C("scores").Insert(score)
+func (score *Score) InsertScore(db DataLayer) error {
+	err := db.C("scores").Insert(score)
 	if err != nil {
 		log.Warning(err)
 		return err

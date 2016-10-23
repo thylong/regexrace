@@ -34,15 +34,14 @@ func AnswerHandler(w http.ResponseWriter, r *http.Request) {
 		token, _ := middlewares.FromAuthHeader(r)
 
 		score := models.Score{
-			Db:        MgoDBFromR(r),
 			Username:  token,
 			BestScore: answer.QID,
 			Submitted: false,
 		}
-		score.UpsertScore()
+		score.UpsertScore(db)
 
 		responseData["status"] = "success"
-		responseData["new_question"] = originalQuestion.GetNextJSONQuestion(answer.QID)
+		responseData["new_question"] = originalQuestion.GetNextJSONQuestion(db, answer.QID)
 	} else {
 		responseData["status"] = "fail"
 	}

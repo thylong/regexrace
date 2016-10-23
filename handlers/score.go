@@ -20,7 +20,8 @@ func ScoreHandler(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	err = score.SubmitScore(token)
+	db := MgoDBFromR(r)
+	err = score.SubmitScore(db, token)
 	if err != nil {
 		panic(err)
 	}
@@ -35,7 +36,7 @@ func ScoreHandler(w http.ResponseWriter, r *http.Request) {
 
 // extractScoreFromRequest validates JSON Payload and store the score.
 func extractScoreFromRequest(r *http.Request) (models.Score, error) {
-	score := models.Score{Db: MgoDBFromR(r)}
+	var score = models.Score{}
 
 	content, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -45,7 +46,7 @@ func extractScoreFromRequest(r *http.Request) (models.Score, error) {
 	}
 
 	err = json.Unmarshal(content, &score)
-	if (err != nil || score == models.Score{Db: MgoDBFromR(r), Username: "", BestScore: 0}) {
+	if (err != nil || score == models.Score{Username: "", BestScore: 0}) {
 		return score, ErrJSONPayloadInvalidFormat
 	}
 	return score, nil

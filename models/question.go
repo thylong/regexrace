@@ -11,7 +11,6 @@ import (
 
 // Question represent a regex to find and the related context (sentence, match).
 type Question struct {
-	Db             MongoDatabase
 	QID            int     `bson:"qid" json:"qid"`
 	Sentence       string  `bson:"sentence" json:"sentence"`
 	MatchPositions [][]int `bson:"match_positions" json:"match_positions"`
@@ -46,7 +45,6 @@ func (db *MongoDatabase) GetQuestion(qid int) (Question, error) {
 	var originalQuestion Question
 
 	err := db.C("questions").Find(bson.M{"qid": qid}).One(&originalQuestion)
-	originalQuestion.Db = *db
 	if err != nil {
 		return originalQuestion, err
 	}
@@ -54,8 +52,8 @@ func (db *MongoDatabase) GetQuestion(qid int) (Question, error) {
 }
 
 // GetNextJSONQuestion returns the next JSON question with HTML Sentence.
-func (q *Question) GetNextJSONQuestion(qid int) map[string]interface{} {
-	newQuestion, _ := q.Db.GetQuestion(qid + 1)
+func (q *Question) GetNextJSONQuestion(db DataLayer, qid int) map[string]interface{} {
+	newQuestion, _ := db.GetQuestion(qid + 1)
 
 	JSONQuestion := make(map[string]interface{})
 	JSONQuestion["qid"] = newQuestion.QID
