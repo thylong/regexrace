@@ -1,4 +1,4 @@
-FROM golang:1.7.1
+FROM golang:1.7
 
 ADD . /go/src/github.com/thylong/regexrace
 WORKDIR /go/src/github.com/thylong/regexrace
