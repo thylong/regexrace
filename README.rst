@@ -13,7 +13,7 @@ Installing
 
 .. code-block:: console
 
-    $ git@github.com:thylong/regexrace.git
+    $ git clone git@github.com:thylong/regexrace.git
     # OR
     $ go get github.com/thylong/regexrace
 
@@ -23,7 +23,6 @@ Quick-start
 
 .. code-block:: console
 
-    $ docker-compose build
     $ docker-compose up
 
 Features
@@ -42,4 +41,4 @@ Features
 Testing
 =======
 
-Currently writing some.
+go test ./...
