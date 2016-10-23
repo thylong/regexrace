@@ -12,3 +12,4 @@ services:
             - mongo
         environment:
             TOKEN_TTL: 5
+            TIMER_DURATION: 5
