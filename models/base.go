@@ -82,10 +82,10 @@ func (s MongoSession) Copy() Session {
 // NewSession returns a new Mongo Session.
 func NewSession() Session {
 	mgoSession, err := mgo.Dial(viper.GetString("MONGO_URI"))
-	session := MongoSession{mgoSession}
 	if err != nil {
 		panic(err)
 	}
+	session := MongoSession{mgoSession}
 	session.SetSafe(&mgo.Safe{})
 	session.SetSyncTimeout(3 * time.Second)
 	session.SetSocketTimeout(3 * time.Second)
