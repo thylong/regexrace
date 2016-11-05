@@ -12,7 +12,7 @@ import (
 
 // AuthHandler returns a JWT token.
 func AuthHandler(w http.ResponseWriter, r *http.Request) {
-	signingKey := []byte(viper.GetString("TOKEN_SIGNATURE"))
+	signingKey := []byte(viper.GetString("TOKEN_SECRET"))
 
 	expTime, _ := strconv.ParseInt(viper.GetString("TOKEN_TTL"), 10, 32)
 	claims := &jwt.StandardClaims{
