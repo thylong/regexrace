@@ -16,6 +16,9 @@ spec:
       - image: gcr.io/regexrace/regexrace:v1
         imagePullPolicy: Always
         name: web
+        resources:
+          requests:
+            cpu: 50m
         ports:
         - containerPort: 8080
           name: http-server

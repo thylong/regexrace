@@ -27,6 +27,9 @@ spec:
       containers:
       - image: mongo
         name: mongo
+        resources:
+          requests:
+            cpu: 75m
         ports:
         - name: mongo
           containerPort: 27017
